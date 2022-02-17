@@ -50,7 +50,7 @@ int setup_perf_counting_hw(pid_t pid, std::vector<int>& eventFds, uint64_t sampl
 
     for (size_t i = 0; i < hw_measurements.size(); ++i) {
         pe.config = hw_measurements[i];
-        int fd = perf_event_open(&pe, pid, -1, group_fd, 0);
+        int fd = perf_event_open(&pe, pid, /* on all cpu's */-1, group_fd, 0);
 
         if (fd == -1) {
             fprintf(stderr, "Error opening leader %llx: %d: %s\n",
@@ -70,8 +70,8 @@ int setup_perf_counting_hw(pid_t pid, std::vector<int>& eventFds, uint64_t sampl
 
 int enable_perf_counting_hw(std::vector<int>& eventFds) {
     for (int fd : eventFds) {
-        ioctl(fd, PERF_EVENT_IOC_RESET, 0);
-        ioctl(fd, PERF_EVENT_IOC_ENABLE, 0);
+        ioctl(fd, PERF_EVENT_IOC_RESET, 0); // reset counters
+        ioctl(fd, PERF_EVENT_IOC_ENABLE, 0); // start counting events
     }
 
     return 0;
@@ -94,7 +94,6 @@ int read_perf_hw_counting_samples(std::vector<int>& eventFds) {
     std::cout << "\n\n\n";
     return 0;
 }
-
 
 pid_t getPidByName(const char* name) {
     char s[1000];
@@ -126,7 +125,7 @@ int main(int argc, char** argv) {
     pid_t procPid = getPidByName(argv[1]);
     std::cerr << "Profiling pid: " << procPid << "\n";
 
-    std::vector<int> eventFds{}; // vector for event filedescriptors
+    std::vector<int> eventFds{}; // vector for perf_event filedescriptors
     setup_perf_counting_hw(procPid, eventFds, 10); // opening perf_event filedescriptors
     enable_perf_counting_hw(eventFds); // resetting and starting counters
 
