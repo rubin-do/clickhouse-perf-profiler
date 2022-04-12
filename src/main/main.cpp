@@ -1,28 +1,26 @@
-#include <cstdlib>
-#include <iostream>
-#include <cinttypes>
-#include <cstdio>
-#include <cstdint>
-#include <unistd.h>
-#include <cstring>
-#include <string>
-#include <cerrno>
-#include <sys/ioctl.h>
-#include <linux/perf_event.h>
 #include <asm/unistd.h>
+#include <linux/perf_event.h>
+#include <sys/ioctl.h>
 #include <sys/mman.h>
+#include <unistd.h>
 
-#include <hwstats.hpp>
-
+#include <cerrno>
 #include <chrono>
+#include <cinttypes>
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <hwstats.hpp>
+#include <iostream>
+#include <string>
 #include <thread>
-
 
 pid_t getPidByName(const char* name) {
     char s[1000];
 
     strcpy(s, "pidof ");
-    strcat(s, name); // "pidof $name" in s
+    strcat(s, name);  // "pidof $name" in s
 
     FILE* cmd = popen(s, "r");
 
@@ -36,15 +34,14 @@ pid_t getPidByName(const char* name) {
     return pid;
 }
 
-
 int main(int argc, char** argv) {
-
     if (argc < 2) {
         std::cerr << "Enter process name to profile!\n";
         exit(EXIT_FAILURE);
     }
 
-    std::cerr << "Preparing ... " << "\n";
+    std::cerr << "Preparing ... "
+              << "\n";
     pid_t procPid = getPidByName(argv[1]);
 
     hwstats::Collector collector(procPid);
@@ -59,7 +56,7 @@ int main(int argc, char** argv) {
         std::cout << "HW_INSTRUCTIONS: " << stats.INSTRUCTIONS << "\n"
                   << "HW_BRANCHES: " << stats.BRANCH_INSTRUCTIONS << "\n";
 
-        std::cout << std::endl; 
+        std::cout << std::endl;
 
         std::this_thread::sleep_for(std::chrono::seconds(2));
     }
