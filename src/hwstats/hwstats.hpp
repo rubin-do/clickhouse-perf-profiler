@@ -1,10 +1,10 @@
 #pragma once
 
+#include <unistd.h>
 #include <asm/unistd.h>
 #include <linux/perf_event.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
-#include <unistd.h>
 
 #include <cassert>
 #include <cerrno>
@@ -17,15 +17,18 @@
 #include <string>
 #include <vector>
 
-namespace hwstats {
-
+namespace hwstats
+{
 static std::vector<int> hw_measurements = {
-    PERF_COUNT_HW_INSTRUCTIONS,  PERF_COUNT_HW_CACHE_REFERENCES,
-    PERF_COUNT_HW_CACHE_MISSES,  PERF_COUNT_HW_BRANCH_INSTRUCTIONS,
+    PERF_COUNT_HW_INSTRUCTIONS,
+    PERF_COUNT_HW_CACHE_REFERENCES,
+    PERF_COUNT_HW_CACHE_MISSES,
+    PERF_COUNT_HW_BRANCH_INSTRUCTIONS,
     PERF_COUNT_HW_BRANCH_MISSES,
 };
 
-struct HWStats {
+struct HWStats
+{
     uint64_t INSTRUCTIONS;
     uint64_t CACHE_REFERENCES;
     uint64_t CACHE_MISSES;
@@ -33,8 +36,9 @@ struct HWStats {
     uint64_t BRANCH_MISSES;
 };
 
-class Collector {
-   public:
+class Collector
+{
+public:
     Collector(pid_t);
 
     void StartCounters();
@@ -43,12 +47,12 @@ class Collector {
 
     ~Collector() = default;
 
-   private:
+private:
     void ResetCounters();
 
-   private:
+private:
     std::vector<int> eventFds_;
     bool started_;
 };
 
-}  // namespace hwstats
+} // namespace hwstats

@@ -12,7 +12,7 @@ INCLUDE_DIRECTORIES (contrib)
 INCLUDE_DIRECTORIES (src)
 
 SUBDIRS (
-    src/clickhouse
+    contrib/clickhouse
     contrib/absl
     contrib/cityhash
     contrib/lz4
