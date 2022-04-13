@@ -10,7 +10,8 @@ static long perf_event_open(struct perf_event_attr *hw_event, pid_t pid,
     return ret;
 }
 
-Collector::Collector(pid_t pid) : eventFds_(hw_measurements.size()) {
+Collector::Collector(pid_t pid)
+    : eventFds_(hw_measurements.size()), started_(false) {
     int group_fd = -1;
     struct perf_event_attr pe {};
 
@@ -18,6 +19,7 @@ Collector::Collector(pid_t pid) : eventFds_(hw_measurements.size()) {
     pe.type = PERF_TYPE_HARDWARE;
     pe.size = sizeof(struct perf_event_attr);
     pe.freq = 1;
+    pe.inherit = 1;
     pe.disabled = 1;
 
     for (size_t i = 0; i < hw_measurements.size(); ++i) {
@@ -40,6 +42,8 @@ HWStats Collector::Collect() {
     assert(started_);
 
     HWStats stats = {};
+
+    memset(&stats, 0, sizeof(stats));
 
     read(eventFds_[0], &stats.INSTRUCTIONS, sizeof(uint64_t));
     read(eventFds_[1], &stats.CACHE_REFERENCES, sizeof(uint64_t));
