@@ -25,10 +25,16 @@ Collected statistics is stored in Clickhouse table **stats** in database **profi
 ```
 
 ### Other
-Note: required clickhouse-server running locally
+Note: for correct count of statistics for multithread programms it is needed for profiler to start before program (flag **inherit** in perf_event_attr works for only new threads).
 
-Used clickhouse-cpp library to work with Clickhouse
+Note: required clickhouse-server running locally.
 
-### ToDo
-* stacktraces
-* parse config info from json file
+Used clickhouse-cpp library to work with Clickhouse.
+
+### Tasks
+- [x] Collect hardware statistics
+- [x] Store statistics in database
+- [ ] Collect stacktraces
+- [ ] Parse config info from json file
+- [ ] Tests
+- [ ] Benchmarks
