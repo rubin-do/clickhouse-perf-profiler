@@ -41,14 +41,14 @@ class Collector
 public:
     Collector(pid_t);
 
-    void StartCounters();
+    void startCounters();
 
-    HWStats Collect();
+    HWStats collect();
 
     ~Collector() = default;
 
 private:
-    void ResetCounters();
+    void resetCounters();
 
 private:
     std::vector<int> eventFds_;

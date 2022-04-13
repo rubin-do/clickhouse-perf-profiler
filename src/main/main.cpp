@@ -70,26 +70,26 @@ int main(int argc, char ** argv)
                    "cacheRef UInt64, cacheMiss UInt64, branch UInt64, branchMiss UInt64) "
                    "ENGINE = Memory");
 
-    pid_t procPid = getPidByName(argv[1]);
+    pid_t proc_pid = getPidByName(argv[1]);
 
-    hwstats::Collector collector(procPid);
+    hwstats::Collector collector(proc_pid);
 
-    std::cerr << "Profiling pid: " << procPid << "\n";
+    std::cerr << "Profiling pid: " << proc_pid << "\n";
 
-    collector.StartCounters();
+    collector.startCounters();
 
     Block block;
 
     auto id = std::make_shared<ColumnUInt64>();
     auto instr = std::make_shared<ColumnUInt64>();
-    auto cacheRef = std::make_shared<ColumnUInt64>();
-    auto cacheMiss = std::make_shared<ColumnUInt64>();
+    auto cache_ref = std::make_shared<ColumnUInt64>();
+    auto cache_miss = std::make_shared<ColumnUInt64>();
     auto branch = std::make_shared<ColumnUInt64>();
-    auto branchMiss = std::make_shared<ColumnUInt64>();
+    auto branch_miss = std::make_shared<ColumnUInt64>();
 
     for (size_t i = 0; i < 100; ++i)
     {
-        auto stats = collector.Collect();
+        auto stats = collector.collect();
 
         std::cerr << "HW_INSTRUCTIONS: " << stats.INSTRUCTIONS << "\n"
                   << "HW_BRANCHES: " << stats.BRANCH_INSTRUCTIONS << "\n"
@@ -101,20 +101,20 @@ int main(int argc, char ** argv)
 
         id->Append(0);
         instr->Append(stats.INSTRUCTIONS);
-        cacheRef->Append(stats.CACHE_REFERENCES);
-        cacheMiss->Append(stats.CACHE_MISSES);
+        cache_ref->Append(stats.CACHE_REFERENCES);
+        cache_miss->Append(stats.CACHE_MISSES);
         branch->Append(stats.BRANCH_INSTRUCTIONS);
-        branchMiss->Append(stats.BRANCH_MISSES);
+        branch_miss->Append(stats.BRANCH_MISSES);
 
         std::this_thread::sleep_for(std::chrono::milliseconds(timeout));
     }
 
     block.AppendColumn("id", id);
     block.AppendColumn("instr", instr);
-    block.AppendColumn("cacheRef", cacheRef);
-    block.AppendColumn("cacheMiss", cacheMiss);
+    block.AppendColumn("cacheRef", cache_ref);
+    block.AppendColumn("cacheMiss", cache_miss);
     block.AppendColumn("branch", branch);
-    block.AppendColumn("branchMiss", branchMiss);
+    block.AppendColumn("branchMiss", branch_miss);
 
     client.Insert("profiler.stats", block);
 }

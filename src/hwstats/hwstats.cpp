@@ -2,9 +2,9 @@
 
 namespace hwstats
 {
-static long perf_event_open(struct perf_event_attr * hw_event, pid_t pid, int cpu, int group_fd, unsigned long flags)
+static int64_t perf_event_open(struct perf_event_attr * hw_event, pid_t pid, int cpu, int group_fd, uint64_t flags)
 {
-    long ret;
+    int64_t ret;
 
     ret = syscall(__NR_perf_event_open, hw_event, pid, cpu, group_fd, flags);
     return ret;
@@ -42,7 +42,7 @@ Collector::Collector(pid_t pid) : eventFds_(hw_measurements.size()), started_(fa
     }
 }
 
-HWStats Collector::Collect()
+HWStats Collector::collect()
 {
     assert(started_);
 
@@ -56,12 +56,12 @@ HWStats Collector::Collect()
     read(eventFds_[3], &stats.BRANCH_INSTRUCTIONS, sizeof(uint64_t));
     read(eventFds_[4], &stats.BRANCH_MISSES, sizeof(uint64_t));
 
-    ResetCounters();
+    resetCounters();
 
     return stats;
 }
 
-void Collector::ResetCounters()
+void Collector::resetCounters()
 {
     for (int fd : eventFds_)
     {
@@ -69,13 +69,13 @@ void Collector::ResetCounters()
     }
 }
 
-void Collector::StartCounters()
+void Collector::startCounters()
 {
     assert(!started_);
 
     started_ = true;
 
-    ResetCounters();
+    resetCounters();
 
     for (int fd : eventFds_)
     {
