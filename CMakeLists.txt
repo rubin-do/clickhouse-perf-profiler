@@ -16,7 +16,9 @@ SUBDIRS (
     contrib/absl
     contrib/cityhash
     contrib/lz4
+    contrib/json
 )
+
 
 IF (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     # there is a problem with __builtin_mul_overflow call at link time

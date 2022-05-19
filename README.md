@@ -35,6 +35,6 @@ Used clickhouse-cpp library to work with Clickhouse.
 - [x] Collect hardware statistics
 - [x] Store statistics in database
 - [ ] Collect stacktraces
-- [ ] Parse config info from json file
+- [x] Parse config from json file
 - [ ] Tests
 - [ ] Benchmarks

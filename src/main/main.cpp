@@ -5,6 +5,8 @@
 #include <sys/ioctl.h>
 #include <sys/mman.h>
 
+#include <fstream>
+
 #include <cerrno>
 #include <chrono>
 #include <cinttypes>
@@ -15,9 +17,12 @@
 #include <iostream>
 #include <string>
 #include <thread>
+
 #include <hwstats.hpp>
+#include <json.hpp>
 
 using namespace clickhouse;
+using namespace nlohmann;
 
 pid_t getPidByName(const char * name)
 {
@@ -62,13 +67,39 @@ int main(int argc, char ** argv)
     std::cerr << "Preparing ... "
               << "\n";
 
-    Client client(ClientOptions().SetHost("localhost"));
+    std::ifstream config_file("config.json");
 
-    client.Execute("CREATE DATABASE IF NOT EXISTS profiler");
+    if (!config_file.is_open())
+    {
+        std::cerr << "Failed to open config!\n";
+        exit(EXIT_FAILURE);
+    }
 
-    client.Execute("CREATE TABLE IF NOT EXISTS profiler.stats (id UInt64, instr UInt64, "
-                   "cacheRef UInt64, cacheMiss UInt64, branch UInt64, branchMiss UInt64) "
-                   "ENGINE = Memory");
+    json config;
+    try {
+        config_file >> config;
+    } catch (...) {
+        std::cerr << "JSON parse error\n";
+        exit(EXIT_FAILURE);
+    }
+
+    if (config.find("host") == config.end() || config.find("database") == config.end() || config.find("table") == config.end()) {
+        std::cerr << "Needed config options not found!\n";
+        exit(EXIT_FAILURE);
+    }
+
+    Client client(ClientOptions().SetHost(config["host"]));
+
+
+    std::string create_db_query = "CREATE DATABASE IF NOT EXISTS ";
+    create_db_query += config["database"];
+    client.Execute(create_db_query);
+
+    std::string create_table_query = std::string("CREATE TABLE IF NOT EXISTS ") + std::string(config["database"]) + "." + std::string(config["table"]) + " (id UInt64, instr UInt64, "
+                                                 "cacheRef UInt64, cacheMiss UInt64, branch UInt64, branchMiss UInt64) "
+                                                 "ENGINE = Memory";
+
+    client.Execute(create_table_query);
 
     pid_t proc_pid = getPidByName(argv[1]);
 
@@ -116,5 +147,6 @@ int main(int argc, char ** argv)
     block.AppendColumn("branch", branch);
     block.AppendColumn("branchMiss", branch_miss);
 
-    client.Insert("profiler.stats", block);
+    std::string insert_query = std::string(config["database"]) + "." + std::string(config["table"]);
+    client.Insert(insert_query, block);
 }
