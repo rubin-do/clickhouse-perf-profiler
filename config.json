@@ -1,4 +1,5 @@
 {
+    "id": "testmachine",
     "host": "localhost",
     "database": "profiler",
     "table": "stats"

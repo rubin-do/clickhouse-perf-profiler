@@ -83,10 +83,12 @@ int main(int argc, char ** argv)
         exit(EXIT_FAILURE);
     }
 
-    if (config.find("host") == config.end() || config.find("database") == config.end() || config.find("table") == config.end()) {
+    if (config.find("host") == config.end() || config.find("database") == config.end() || config.find("table") == config.end()
+    || config.find("id") == config.end()) {
         std::cerr << "Needed config options not found!\n";
         exit(EXIT_FAILURE);
     }
+    const std::string machine_id = config["id"];
 
     Client client(ClientOptions().SetHost(config["host"]));
 
@@ -95,11 +97,13 @@ int main(int argc, char ** argv)
     create_db_query += config["database"];
     client.Execute(create_db_query);
 
-    std::string create_table_query = std::string("CREATE TABLE IF NOT EXISTS ") + std::string(config["database"]) + "." + std::string(config["table"]) + " (id UInt64, instr UInt64, "
+    std::string create_table_query = std::string("CREATE TABLE IF NOT EXISTS ") + std::string(config["database"]) + "." + std::string(config["table"]) + " (id String, instr UInt64, "
                                                  "cacheRef UInt64, cacheMiss UInt64, branch UInt64, branchMiss UInt64) "
                                                  "ENGINE = Memory";
 
     client.Execute(create_table_query);
+
+    const std::string insert_query = std::string(config["database"]) + "." + std::string(config["table"]);
 
     pid_t proc_pid = getPidByName(argv[1]);
 
@@ -111,14 +115,15 @@ int main(int argc, char ** argv)
 
     Block block;
 
-    auto id = std::make_shared<ColumnUInt64>();
+    auto id = std::make_shared<ColumnString>();
     auto instr = std::make_shared<ColumnUInt64>();
     auto cache_ref = std::make_shared<ColumnUInt64>();
     auto cache_miss = std::make_shared<ColumnUInt64>();
     auto branch = std::make_shared<ColumnUInt64>();
     auto branch_miss = std::make_shared<ColumnUInt64>();
 
-    for (size_t i = 0; i < 100; ++i)
+    size_t iter = 0;
+    while (true)
     {
         auto stats = collector.collect();
 
@@ -130,23 +135,36 @@ int main(int argc, char ** argv)
 
         std::cerr << std::endl;
 
-        id->Append(0);
+        id->Append(machine_id);
         instr->Append(stats.INSTRUCTIONS);
         cache_ref->Append(stats.CACHE_REFERENCES);
         cache_miss->Append(stats.CACHE_MISSES);
         branch->Append(stats.BRANCH_INSTRUCTIONS);
         branch_miss->Append(stats.BRANCH_MISSES);
 
+        if (++iter == 10) {
+            block.AppendColumn("id", id);
+            block.AppendColumn("instr", instr);
+            block.AppendColumn("cacheRef", cache_ref);
+            block.AppendColumn("cacheMiss", cache_miss);
+            block.AppendColumn("branch", branch);
+            block.AppendColumn("branchMiss", branch_miss);
+
+            client.Insert(insert_query, block);
+
+            block = Block();
+
+            id->Clear();
+            instr->Clear();
+            cache_ref->Clear();
+            cache_miss->Clear();
+            branch->Clear();
+            branch_miss->Clear();
+            iter = 0;
+        }
+
         std::this_thread::sleep_for(std::chrono::milliseconds(timeout));
     }
 
-    block.AppendColumn("id", id);
-    block.AppendColumn("instr", instr);
-    block.AppendColumn("cacheRef", cache_ref);
-    block.AppendColumn("cacheMiss", cache_miss);
-    block.AppendColumn("branch", branch);
-    block.AppendColumn("branchMiss", branch_miss);
 
-    std::string insert_query = std::string(config["database"]) + "." + std::string(config["table"]);
-    client.Insert(insert_query, block);
 }
