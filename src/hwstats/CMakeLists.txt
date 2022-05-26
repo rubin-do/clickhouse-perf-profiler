@@ -1,9 +1,5 @@
-project(CollectorLibrary)
-
 set(SOURCES hwstats.cpp) 
-set(HEADERS hwstats.hpp)
-
-set(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY_PATH})
+set(HEADERS hwstats.h)
 
 add_library(collector_lib ${SOURCES} ${HEADERS})
 

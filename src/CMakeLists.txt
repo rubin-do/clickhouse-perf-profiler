@@ -1,0 +1,7 @@
+include_directories(${CMAKE_CURRENT_LIST_DIR})
+add_subdirectory(util)
+add_subdirectory(hwstats)
+add_subdirectory(unwinder)
+add_subdirectory(dw)
+add_subdirectory(cli)
+add_subdirectory(dbmanager)

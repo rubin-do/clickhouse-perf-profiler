@@ -2,8 +2,8 @@
 #include "wire_format.h"
 #include "output.h"
 
-#include <cityhash/city.h>
-#include <lz4/lz4.h>
+#include <city.h>
+#include <lz4.h>
 #include <stdexcept>
 #include <system_error>
 

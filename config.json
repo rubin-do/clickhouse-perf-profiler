@@ -1,6 +1,8 @@
 {
-    "id": "testmachine",
     "host": "localhost",
     "database": "profiler",
-    "table": "stats"
+    "table": "stats",
+    "machine_id": "1234",
+    "maxLoad": 1
 }
+

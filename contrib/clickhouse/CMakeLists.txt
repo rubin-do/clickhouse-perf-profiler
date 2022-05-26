@@ -37,18 +37,28 @@ ENDIF ()
 
 ADD_LIBRARY (clickhouse-cpp-lib SHARED ${clickhouse-cpp-lib-src})
 SET_TARGET_PROPERTIES(clickhouse-cpp-lib PROPERTIES LINKER_LANGUAGE CXX)
-TARGET_LINK_LIBRARIES (clickhouse-cpp-lib
-    absl-lib
-    cityhash-lib
-    lz4-lib
-)
+
+
+find_package(absl REQUIRED)
+target_link_libraries (clickhouse-cpp-lib PRIVATE absl::numeric)
+
+find_package(cityhash REQUIRED)
+target_link_libraries (clickhouse-cpp-lib PRIVATE cityhash)
+
+find_package(lz4 REQUIRED)
+target_link_libraries(clickhouse-cpp-lib PRIVATE lz4::lz4)
+
+
 
 ADD_LIBRARY (clickhouse-cpp-lib-static STATIC ${clickhouse-cpp-lib-src})
-TARGET_LINK_LIBRARIES (clickhouse-cpp-lib-static
-    absl-lib
-    cityhash-lib
-    lz4-lib
-)
+find_package(absl REQUIRED)
+target_link_libraries (clickhouse-cpp-lib-static PRIVATE absl::numeric)
+
+find_package(cityhash REQUIRED)
+target_link_libraries (clickhouse-cpp-lib-static PRIVATE cityhash)
+
+find_package(lz4 REQUIRED)
+target_link_libraries(clickhouse-cpp-lib-static PRIVATE lz4::lz4)
 
 IF (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     # there is a problem with __builtin_mul_overflow call at link time
