@@ -8,21 +8,42 @@ Collected stats:
 * Number of Cache misses
 * Number of Branch Instructions
 * Number of Branch Misses
+* Stacktrace of process and it's threads
 
 Collected statistics is stored in Clickhouse table **stats** in database **profiler**.
 
 ### Build
+Requires cmake 3.22 or higher, ninja 
 ```
-    mkdir build
-    cd build
-    cmake ..
-    cmake --build .
+    cmake --preset=release-vcpkg
+    cmake --build --preset release-vcpkg --parallel
 ```
+
+### Config file
+Example of config file
+```
+{
+    "host": "localhost",
+    "database": "profiler",
+    "table": "stats",
+    "machine_id": "1234",
+    "maxLoad": 1
+}
+```
+If database and/or table doesn't exist, it will be created.
+
+maxLoad is number of stats accumulated locally before uploading to database.
 
 ### Usage
 ```
-    sudo ./profiler [process-name] [timeout-ms]
+    sudo ./profiler -p [Process id] -F [Frequency]
 ```
+
+### Database
+Collected statistics will be stored in table in database, provided in config file.
+
+| id | instr | timestamp | cacheRef | cacheMiss | branch | branchMiss | trace |
+| -- | ----- | --------- | -------- | --------- | ------ | ---------- | ----- |
 
 ### Other
 Note: for correct count of statistics for multithread programms it is needed for profiler to start before program (flag **inherit** in perf_event_attr works for only new threads).
@@ -31,10 +52,14 @@ Note: required clickhouse-server running locally.
 
 Used clickhouse-cpp library to work with Clickhouse.
 
+Used nlohmann_json to work with json.
+
+Used elfutils to work with elf files and get stacktraces.
+
 ### Tasks
 - [x] Collect hardware statistics
 - [x] Store statistics in database
-- [ ] Collect stacktraces
+- [x] Collect stacktraces
 - [x] Parse config from json file
 - [ ] Tests
 - [ ] Benchmarks
