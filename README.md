@@ -12,6 +12,11 @@ Collected stats:
 
 Collected statistics is stored in Clickhouse table **stats** in database **profiler**.
 
+### Clone
+```
+    git clone --recursive git@github.com:rubin-do/clickhouse-perf-profiler.git
+```
+
 ### Build
 Requires cmake 3.22 or higher, ninja 
 ```
