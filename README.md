@@ -36,7 +36,7 @@ maxLoad is number of stats accumulated locally before uploading to database.
 
 ### Usage
 ```
-    sudo ./profiler -p [Process id] -F [Frequency]
+    sudo ./build/release-vcpkg/bin/profiler -p [Process id] -F [Frequency]
 ```
 
 ### Database
