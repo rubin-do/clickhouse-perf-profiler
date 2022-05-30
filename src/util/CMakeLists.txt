@@ -3,7 +3,9 @@ set(SOURCES
     backward.cpp
     ctrlc.cpp
     demangle.cpp
+    processes.cpp
 )
+
 set(HEADERS
 )
 
