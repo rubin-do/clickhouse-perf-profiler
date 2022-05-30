@@ -26,9 +26,7 @@ Collector::Collector(pid_t pid)
         int fd = perf_event_open(&pe, pid, /* on all cpu's */ -1, group_fd, 0);
 
         if (fd == -1) {
-            fprintf(stderr, "Error opening leader %llx: %d: %s\n", pe.config,
-                    errno, strerror(errno));
-            exit(EXIT_FAILURE);
+            throw std::exception();
         }
 
         eventFds_[i] = fd;
@@ -70,6 +68,12 @@ void Collector::startCounters() {
 
     for (int fd : eventFds_) {
         ioctl(fd, PERF_EVENT_IOC_ENABLE, 0);
+    }
+}
+
+Collector::~Collector() {
+    for (int fd : eventFds_) {
+        close(fd);
     }
 }
 

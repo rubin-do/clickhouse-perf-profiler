@@ -41,7 +41,7 @@ class Collector {
 
     HWStats collect();
 
-    ~Collector() = default;
+    ~Collector();
 
    private:
     void resetCounters();
