@@ -5,9 +5,6 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 #include <unwinder.h>
-
-#include <unordered_map>
-
 #include <util/processes.h>
 
 #include <chrono>
@@ -24,6 +21,7 @@
 #include <nlohmann/json.hpp>
 #include <optional>
 #include <string>
+#include <unordered_map>
 
 namespace profiler {
 
@@ -100,7 +98,8 @@ db::dbOptions ParseDBoptions(
 }
 
 std::string getTimestamp() {
-    std::time_t time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    std::time_t time =
+        std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
     std::stringstream ss;
     ss << std::ctime(&time);
 
@@ -170,12 +169,14 @@ int Main(int argc, const char* argv[]) {
                 unwinders.at(pid).Unwind();
                 auto trace = unwinders.at(pid).DumpTraces();
 
-                db.Store(pid, stats.INSTRUCTIONS, stats.CACHE_REFERENCES, stats.CACHE_MISSES,
-                         stats.BRANCH_INSTRUCTIONS, stats.BRANCH_MISSES, trace, timestamp);
+                db.Store(pid, stats.INSTRUCTIONS, stats.CACHE_REFERENCES,
+                         stats.CACHE_MISSES, stats.BRANCH_INSTRUCTIONS,
+                         stats.BRANCH_MISSES, trace, timestamp);
             }
-        } // need to clear dead processes resources
+        }  // need to clear dead processes resources
 
-        spdlog::info("Unwinded {} processes in {}",  processes.size(), std::chrono::high_resolution_clock::now() - start);
+        spdlog::info("Unwinded {} processes in {}", processes.size(),
+                     std::chrono::high_resolution_clock::now() - start);
         std::this_thread::sleep_until(start + sleep_delta);
     }
 

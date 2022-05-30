@@ -14,7 +14,8 @@ struct dbOptions {
 };
 
 using clickhouse::Block;
-using clickhouse::ColumnString, clickhouse::ColumnUInt64, clickhouse::ColumnInt32;
+using clickhouse::ColumnString, clickhouse::ColumnUInt64,
+    clickhouse::ColumnInt32;
 
 class Manager {
    public:
@@ -29,7 +30,8 @@ class Manager {
         client_.Execute(
             fmt::format("CREATE DATABASE IF NOT EXISTS {}", database_));
         client_.Execute(fmt::format(
-            "CREATE TABLE IF NOT EXISTS {}.{} (id String, pid Int32, instr UInt64, "
+            "CREATE TABLE IF NOT EXISTS {}.{} (id String, pid Int32, instr "
+            "UInt64, "
             "cacheRef UInt64, cacheMiss UInt64, branch UInt64, branchMiss "
             "UInt64, trace String, timestamp String) ENGINE = Memory",
             database_, table_));
@@ -40,8 +42,9 @@ class Manager {
     Manager(Manager& other) = delete;
 
    public:
-    void Store(pid_t pid, uint64_t instr, uint64_t cache_ref, uint64_t cache_miss,
-               uint64_t branch, uint64_t branch_miss, const std::string& trace, const std::string& timestamp) {
+    void Store(pid_t pid, uint64_t instr, uint64_t cache_ref,
+               uint64_t cache_miss, uint64_t branch, uint64_t branch_miss,
+               const std::string& trace, const std::string& timestamp) {
         columns_.AddData(machine_id_, pid, instr, cache_ref, cache_miss, branch,
                          branch_miss, trace, timestamp);
 
@@ -76,12 +79,12 @@ class Manager {
               branch(std::make_shared<ColumnUInt64>()),
               branchMiss(std::make_shared<ColumnUInt64>()),
               trace(std::make_shared<ColumnString>()),
-              timestamp(std::make_shared<ColumnString>())
-        {}
+              timestamp(std::make_shared<ColumnString>()) {}
 
-        void AddData(const std::string& id, pid_t pid, uint64_t instr, uint64_t cache_ref,
-                     uint64_t cache_miss, uint64_t branch, uint64_t branch_miss,
-                     const std::string& trace, const std::string& timestamp) {
+        void AddData(const std::string& id, pid_t pid, uint64_t instr,
+                     uint64_t cache_ref, uint64_t cache_miss, uint64_t branch,
+                     uint64_t branch_miss, const std::string& trace,
+                     const std::string& timestamp) {
             this->id->Append(id);
             this->pid->Append(pid);
             this->instr->Append(instr);
