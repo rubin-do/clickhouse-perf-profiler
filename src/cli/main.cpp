@@ -6,6 +6,9 @@
 #include <spdlog/spdlog.h>
 #include <unwinder.h>
 
+#include <unordered_map>
+
+#include <util/processes.h>
 
 #include <chrono>
 #include <compare>
@@ -30,11 +33,6 @@ Options ParseOptions(int argc, const char* argv[]) {
     cpparg::parser parser("profiler");
 
     parser.title("Clickhouse-profiler");
-
-    parser.add('p', "pid")
-        .description("Process to trace")
-        .required()
-        .store(options.Pid);
 
     parser.add('T', "thread-names")
         .description("Show thread names")
@@ -124,34 +122,60 @@ int Main(int argc, const char* argv[]) {
 
     db::dbOptions db_options = ParseDBoptions();
 
-    spdlog::info("Going to trace process {}", options.Pid);
+    spdlog::info("Starting profiling");
 
-    profiler::dw::Unwinder unwinder{options};
+    std::unordered_map<pid_t, profiler::dw::Unwinder> unwinders;
+    std::unordered_map<pid_t, hwstats::Collector> collectors;
+
     db::Manager db(db_options);
-    hwstats::Collector collector(options.Pid);
-
-    collector.startCounters();
 
     auto sleep_delta = options.Frequency
                            ? std::chrono::seconds{1} / options.Frequency
                            : std::chrono::seconds{0};
-    for (; ;) {
+
+    for (;;) {
         if (util::WasInterrupted()) {
             spdlog::info("Stopped by SIGINT");
             break;
         }
 
+        auto processes = util::getProcesses();
+        spdlog::info("Found {} processes to profile", processes.size());
         auto start = std::chrono::high_resolution_clock::now();
-        auto timestamp = getTimestamp();
 
-        unwinder.Unwind();
+        for (pid_t pid : processes) {
+            if (pid == getpid()) {
+                continue;
+            }
 
-        auto trace = unwinder.DumpTraces();
-        auto stats = collector.collect();
+            if (unwinders.find(pid) == unwinders.end()) {
+                options.Pid = pid;
+                try {
+                    unwinders.emplace(std::piecewise_construct,
+                                      std::forward_as_tuple(pid),
+                                      std::forward_as_tuple(options));
+                    collectors.emplace(std::piecewise_construct,
+                                       std::forward_as_tuple(pid),
+                                       std::forward_as_tuple(pid));
+                    collectors.at(pid).startCounters();
+                } catch (std::exception& e) {
+                    continue;
+                }
 
-        db.Store(stats.INSTRUCTIONS, stats.CACHE_REFERENCES, stats.CACHE_MISSES,
-                 stats.BRANCH_INSTRUCTIONS, stats.BRANCH_MISSES, trace, timestamp);
+            } else {
+                auto timestamp = getTimestamp();
 
+                auto stats = collectors.at(pid).collect();
+
+                unwinders.at(pid).Unwind();
+                auto trace = unwinders.at(pid).DumpTraces();
+
+                db.Store(pid, stats.INSTRUCTIONS, stats.CACHE_REFERENCES, stats.CACHE_MISSES,
+                         stats.BRANCH_INSTRUCTIONS, stats.BRANCH_MISSES, trace, timestamp);
+            }
+        } // need to clear dead processes resources
+
+        spdlog::info("Unwinded {} processes in {}",  processes.size(), std::chrono::high_resolution_clock::now() - start);
         std::this_thread::sleep_until(start + sleep_delta);
     }
 
