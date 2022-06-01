@@ -1,6 +1,6 @@
 ## clickhouse-perf-profiler
 
-Collect hardware statistics of process and store it in clickhouse database.
+Perform system-wide profiling: collect statistics of processes and store them in clickhouse database.
 
 Collected stats:
 * Number of Instructions
@@ -47,8 +47,8 @@ maxLoad is number of stats accumulated locally before uploading to database.
 ### Database
 Collected statistics will be stored in table in database, provided in config file.
 
-| id | instr | timestamp | cacheRef | cacheMiss | branch | branchMiss | trace |
-| -- | ----- | --------- | -------- | --------- | ------ | ---------- | ----- |
+| id | pid | instr | timestamp | cacheRef | cacheMiss | branch | branchMiss | trace |
+| -- | --- | ----- | --------- | -------- | --------- | ------ | ---------- | ----- |
 
 ### Other
 Note: for correct count of statistics for multithread programms it is needed for profiler to start before program (flag **inherit** in perf_event_attr works for only new threads).
