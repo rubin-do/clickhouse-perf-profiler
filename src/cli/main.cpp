@@ -132,6 +132,8 @@ int Main(int argc, const char* argv[]) {
                            ? std::chrono::seconds{1} / options.Frequency
                            : std::chrono::seconds{0};
 
+    std::vector<pid_t> prev_processes;
+
     for (;;) {
         if (util::WasInterrupted()) {
             spdlog::info("Stopped by SIGINT");
@@ -139,6 +141,18 @@ int Main(int argc, const char* argv[]) {
         }
 
         auto processes = util::getProcesses();
+
+        std::vector<pid_t> dead_processes;
+
+        std::set_difference(prev_processes.begin(), prev_processes.end(),
+                            processes.begin(), processes.end(),
+                            std::back_inserter(dead_processes));
+
+        for (pid_t proc : dead_processes) {
+            unwinders.erase(proc);
+            collectors.erase(proc);
+        }
+
         spdlog::info("Found {} processes to profile", processes.size());
         auto start = std::chrono::high_resolution_clock::now();
 
@@ -177,7 +191,10 @@ int Main(int argc, const char* argv[]) {
 
         spdlog::info("Unwinded {} processes in {}", processes.size(),
                      std::chrono::high_resolution_clock::now() - start);
+
+        spdlog::info("Open unwinders: {}, collectors: {}", collectors.size(), unwinders.size());
         std::this_thread::sleep_until(start + sleep_delta);
+        prev_processes = std::move(processes);
     }
 
     return 0;
