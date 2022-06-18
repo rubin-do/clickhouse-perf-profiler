@@ -66,5 +66,4 @@ Used elfutils to work with elf files and get stacktraces.
 - [x] Store statistics in database
 - [x] Collect stacktraces
 - [x] Parse config from json file
-- [ ] Tests
-- [ ] Benchmarks
+- [x] Tests

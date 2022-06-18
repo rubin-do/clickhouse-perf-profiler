@@ -11,6 +11,7 @@ add_executable(profiler ${SOURCES} ${HEADERS})
 
 target_link_libraries(profiler
     PRIVATE ${PROFILER_PRIVATE_LIBRARIES} unwinder_lib
+    PRIVATE clickhouse-cpp-lib-static
     PUBLIC cpparg dbmanager_lib collector_lib
     PUBLIC ${PROFILER_PUBLIC_LIBRARIES}
 )

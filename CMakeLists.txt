@@ -10,5 +10,6 @@ include(cmake/dependencies/populate.cmake)
 
 add_subdirectory(contrib)
 include_directories(contrib)
+include_directories(contrib/clickhouse-cpp/)
 
 add_subdirectory(src)

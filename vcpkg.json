@@ -10,8 +10,6 @@
     "elfutils",
     "fmt",
     "spdlog",
-    "nlohmann-json",
-    "cityhash",
-    "lz4"
+    "nlohmann-json"
   ]
 }

@@ -1,3 +1,6 @@
 [submodule "contrib/cpparg"]
 	path = contrib/cpparg
 	url = https://github.com/BigRedEye/cpparg
+[submodule "contrib/clickhouse-cpp"]
+	path = contrib/clickhouse-cpp
+	url = https://github.com/ClickHouse/clickhouse-cpp
