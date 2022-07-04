@@ -2,7 +2,7 @@
   "version": 2,
   "cmakeMinimumRequired": {
     "major": 3,
-    "minor": 19,
+    "minor": 22,
     "patch": 0
   },
   "configurePresets": [
@@ -20,22 +20,6 @@
       }
     },
     {
-      "name": "release-vcpkg-alpine",
-      "displayName": "Release vcpkg",
-      "description": "Release build using deps from vcpkg from ssytee",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/release-vcpkg-static",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": true,
-        "CMAKE_TOOLCHAIN_FILE": "/tmp/vcpkg/scripts/buildsystems/vcpkg.cmake",
-        "FORCE_COLORED_OUTPUT": true,
-        "PROFILER_STATIC_LIBC": true,
-        "PROFILER_STATIC_LIBSTDCXX": true,
-        "PROFILER_DEPS": "vcpkg"
-      }
-    },
-    {
       "name": "debug-vcpkg",
       "displayName": "Debug vcpkg",
       "description": "Debug build using deps from vcpkg",
@@ -47,32 +31,6 @@
         "FORCE_COLORED_OUTPUT": true,
         "PROFILER_DEPS": "vcpkg"
       }
-    },
-    {
-      "name": "release-system",
-      "displayName": "Release system",
-      "description": "Release build using deps from system",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/release-system",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": true,
-        "FORCE_COLORED_OUTPUT": true,
-        "PROFILER_DEPS": "system"
-      }
-    },
-    {
-      "name": "debug-system",
-      "displayName": "Debug system",
-      "description": "Debug build using deps from system",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/debug-system",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": true,
-        "FORCE_COLORED_OUTPUT": true,
-        "PROFILER_DEPS": "system"
-      }
     }
   ],
   "buildPresets": [
@@ -83,28 +41,10 @@
       "description": "Release build using deps from vcpkg"
     },
     {
-      "name": "release-vcpkg-alpine",
-      "configurePreset": "release-vcpkg-alpine",
-      "displayName": "Release vcpkg static",
-      "description": "Release build using deps from vcpkg"
-    },
-    {
       "name": "debug-vcpkg",
       "configurePreset": "debug-vcpkg",
       "displayName": "Debug vcpkg",
       "description": "Debug build using deps from vcpkg"
-    },
-    {
-      "name": "release-system",
-      "configurePreset": "release-system",
-      "displayName": "Release system",
-      "description": "Release build using deps from system"
-    },
-    {
-      "name": "debug-system",
-      "configurePreset": "debug-system",
-      "displayName": "Debug system",
-      "description": "Debug build using deps from system"
     }
   ]
 }

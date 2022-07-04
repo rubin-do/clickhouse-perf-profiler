@@ -45,13 +45,6 @@ Options ParseOptions(int argc, const char* argv[]) {
         .description("Show line numbers in output")
         .flag(options.LineNumbers);
 
-    parser.add('d', "debug-info")
-        .description("Use separate debug info")
-        .optional()
-        .handle<std::string>([&options](std::string arg) {
-            options.DebugInfo = std::filesystem::path{std::move(arg)};
-        });
-
     parser.add_help('h', "help");
 
     parser.parse(argc, argv);

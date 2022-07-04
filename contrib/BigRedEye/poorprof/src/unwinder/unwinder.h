@@ -42,7 +42,6 @@ namespace profiler {
 
 struct Options {
     pid_t Pid = 0;
-    std::optional<std::filesystem::path> DebugInfo;
 
     bool ThreadNames = false;
     bool LineNumbers = false;
@@ -101,7 +100,6 @@ class Unwinder {
         const char* File = nullptr;
         Dwarf_Addr Begin = 0;
         Dwarf_Addr End = 0;
-        std::optional<dw::GdbIndex> GdbIndex;
     };
 
     struct Symbol {
@@ -120,12 +118,10 @@ class Unwinder {
     Unwinder(Options opts)
         : Options_{std::move(opts)}
           , Pid_{Options_.Pid}
-          , DebugInfo_{Options_.DebugInfo}
-          , DebugInfoPath_{DebugInfo_ ? DebugInfo_->data() : nullptr}
           , Callbacks_{
               .find_elf = dwfl_linux_proc_find_elf,
               .find_debuginfo = dwfl_standard_find_debuginfo,
-              .debuginfo_path = &DebugInfoPath_,
+              .debuginfo_path = nullptr
           }
     {
 
@@ -394,7 +390,6 @@ class Unwinder {
             ObjectFile obj;
             obj.Name = dwfl_module_info(module, nullptr, &obj.Begin, &obj.End, nullptr, nullptr, &obj.File, nullptr);
             spdlog::info("Found module {} (@{})", obj.Name, obj.File);
-            obj.GdbIndex = GdbIndex::Open(module, obj.File);
             Modules_[module] = std::make_unique<ObjectFile>(obj);
         }
         ObjectFile* obj = Modules_[module].get();
@@ -402,11 +397,9 @@ class Unwinder {
         Dwarf_Addr offset = 0;
         Dwarf_Die cudieStorage;
         Dwarf_Die* cudie = dwfl_module_addrdie(module, ip, &offset);
-        if (!cudie && obj->GdbIndex) {
+        if (!cudie) {
             // Clang does not generate .debug_aranges, so dwfl_module_addrdie can fail.
             // Try to find CU DIE using gdb_index.
-            cudie = obj->GdbIndex->Lookup(ip, &cudieStorage);
-            offset = obj->GdbIndex->DwarfBias();
             spdlog::info("Lookup in gdb index: {:x}, offset: {}", (uintptr_t)cudie, offset);
         }
 
@@ -670,8 +663,6 @@ class Unwinder {
    private:
     Options Options_;
     pid_t Pid_ = 0;
-    std::optional<std::string> DebugInfo_;
-    char* DebugInfoPath_ = nullptr;
 
     Dwfl_Callbacks Callbacks_;
     Dwfl* Dwfl_ = nullptr;

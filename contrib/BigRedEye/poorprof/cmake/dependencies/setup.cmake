@@ -1,0 +1,5 @@
+message("Using dependencies from ${PROFILER_DEPS}")
+if(${PROFILER_DEPS} STREQUAL "vcpkg")
+    include(contrib/BigRedEye/poorprof/cmake/dependencies/vcpkg_features.cmake)
+    include(contrib/BigRedEye/poorprof/cmake/dependencies/vcpkg_toolchain.cmake)
+endif()
